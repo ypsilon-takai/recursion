@@ -7,8 +7,9 @@
        (product (next coll)))))
 
 (defn singleton? [coll]
-  (and (first coll)
-       (empty? (next coll))))
+  (if (seq coll)
+    (empty? (next coll))
+    false))
 
 (defn my-last [coll]
   (cond (empty? coll) nil
@@ -115,7 +116,7 @@
 (defn inits [a-seq]
   (if (empty? a-seq)
     [[]]
-    (conj a-seq (inits (butlast a-seq)))))
+    (conj (inits (butlast a-seq)) a-seq )))
 
 (defn rotations 
   ([a-seq] (rotations [] a-seq))
@@ -127,7 +128,7 @@
                        (rest right))))))
 
 (defn rotations [a-seq]
-  (map concat (tails a-seq) (reverse (inits a-seq))))
+  (set (map concat (tails a-seq) (inits a-seq))))
 
 (defn my-frequencies-helper [freqs a-seq]
   (if (empty? a-seq)
@@ -181,11 +182,36 @@
       (seq-merge (merge-sort front)
                  (merge-sort rear)))))
 
+(defn increasing? [s]
+  (every? neg? (map #(apply - %) (partition 2 1 s))))
+
+(defn decreasing? [s]
+  (every? pos? (map #(apply - %) (partition 2 1 s))))
+
 (defn split-into-monotonics [a-seq]
-  [:-])
+  (if (empty? a-seq)
+    []
+    (let [part (last (take-while #(or (increasing? %)
+                                      (decreasing? %))
+                                 (inits a-seq)))]
+      (cons part
+            (split-into-monotonics (drop (count part) a-seq))))))
 
 (defn permutations [a-set]
-  [:-])
+  (if (singleton? a-set)
+    a-set
+    (let [all-rotaitions (rotations a-set)]
+      (concat (map #(cons (first %) (permutations (rest %)))
+                   all-rotaitions)))))
+
+(defn permutations [a-set]
+  (if (singleton? a-set)
+    [a-set]
+    (map (fn [s] (map #(cons (first %) %) (permutations (rest s))))
+         (rotations a-set))))
+
+(defn permutations [a-set]
+  nil)
 
 (defn powerset [a-set]
   [:-])
